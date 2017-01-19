@@ -101,9 +101,17 @@ function HocrProofreader(config) {
             pageNode = pageNode.parentNode;
         }
         if (pageNode && pageNode !== self.currentPage) {
-            // TODO: check direction for proper scrolling
+            var backwards = false, tmpNode = self.currentPage;
+            while (tmpNode) {
+                tmpNode = tmpNode.previousSibling;
+                if (tmpNode === pageNode) {
+                    backwards = true;
+                    break;
+                }
+            }
+
             self.currentPage = pageNode;
-            self.renderCurrentPage();
+            self.renderCurrentPage(backwards);
         }
 
         var node = event.target.linkedNode;
@@ -219,7 +227,7 @@ HocrProofreader.prototype.setPage = function (page) {
     this.renderCurrentPage();
 };
 
-HocrProofreader.prototype.renderCurrentPage = function () {
+HocrProofreader.prototype.renderCurrentPage = function (scrollBottom) {
     this.layoutContainer.scrollTop = 0;
     this.layoutContainer.scrollLeft = 0;
 
@@ -272,6 +280,10 @@ HocrProofreader.prototype.renderCurrentPage = function () {
             rectNode.linkedNode = wordNode;
             wordNode.linkedNode = rectNode;
         }
+    }
+
+    if (scrollBottom) {
+        this.layoutContainer.scrollTop = this.layoutContainer.scrollHeight - this.layoutContainer.clientHeight;
     }
 };
 
