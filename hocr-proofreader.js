@@ -331,7 +331,11 @@ HocrProofreader.prototype.scrollIntoViewIfNeeded = function (node, scrollParentN
 
     if (nodeRect.bottom > scrollParentNode.scrollTop + scrollParentNode.clientHeight) {
         node.scrollIntoView({behavior: 'smooth', block: 'end'});
+    } else if (nodeRect.right > scrollParentNode.scrollLeft + scrollParentNode.clientWidth) {
+        node.scrollIntoView({behavior: 'smooth', block: 'end'});
     } else if (nodeRect.top < scrollParentNode.scrollTop) {
+        node.scrollIntoView({behavior: 'smooth', block: 'start'});
+    } else if (nodeRect.left < scrollParentNode.scrollLeft) {
         node.scrollIntoView({behavior: 'smooth', block: 'start'});
     }
 };
