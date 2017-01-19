@@ -1,0 +1,24 @@
+.layout, .editor {
+    display: block;
+    margin: auto;
+    background: #fff;
+    box-sizing: border-box;
+    border: 1px solid #c1c1c1;
+    box-shadow: 0 0 6px 0 rgba(0, 0, 0, 0.2);
+}
+
+.layout .rects rect {
+    fill: none;
+    pointer-events: fill;
+}
+.layout .rects rect:hover, .layout .rects rect.hover {
+    fill: #99cfff;
+    opacity: 0.5;
+    stroke: #007eff;
+    stroke-width: 3;
+}
+
+.editor {
+    width: 100%;
+    height: 100%;
+}

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>hOCR-Proofreader</title>
+    <link rel="stylesheet" href="fonts.css"/>
+    <link rel="stylesheet" href="main.css"/>
+    <link rel="stylesheet" href="hocr-proofreader.css"/>
+    <script src="hocr-proofreader.js"></script>
+    <script src="main.js"></script>
+</head>
+<body>
+<div class="viewport">
+    <div class="toolbar">
+        <div class="logo">hOCR-Proofreader</div>
+
+        <button id="toggle-layout-image">Image/Text</button>
+        <div class="separator"></div>
+
+        <span>Zoom:</span>
+        <button id="zoom-page-full">Full Page</button>
+        <button id="zoom-page-width">Page Width</button>
+        <button id="zoom-original">Original</button>
+        <div class="separator"></div>
+
+        <button id="button-save">Save</button>
+    </div>
+
+    <div id="layout-container" class="container"></div>
+    <div id="editor-container" class="container"></div>
+</div>
+</body>
+</html>
