@@ -346,7 +346,7 @@ HocrProofreader.prototype.getNodeOptions = function (node) {
 };
 
 HocrProofreader.prototype.inheritOptions = function (options, parentOptions) {
-    var inheritableOptions = ['baseline', 'baselineBbox'];
+    var inheritableOptions = ['baseline', 'baselineBbox', 'x_fsize'];
 
     // baseline is relative to the bbox of the node where the baseline is defined, so we have to remember this bbox:
     if ('baseline' in options && 'bbox' in options) {
