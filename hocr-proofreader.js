@@ -319,26 +319,16 @@ HocrProofreader.prototype.onHover = function (target, isEditorContainer) {
 };
 
 HocrProofreader.prototype.scrollIntoViewIfNeeded = function (node, scrollParentNode) {
-    var nodeRect;
-
-    if (node.namespaceURI === 'http://www.w3.org/2000/svg') {
-        // SVG elements have no offsetLeft/Top/...
-        var rect = node.getBoundingClientRect();
-        var parentRect = scrollParentNode.getBoundingClientRect();
-        nodeRect = {
-            left: rect.left - parentRect.left + scrollParentNode.scrollLeft,
-            top: rect.top - parentRect.top + scrollParentNode.scrollTop,
-            right: rect.right - parentRect.left + scrollParentNode.scrollLeft,
-            bottom: rect.bottom - parentRect.top + scrollParentNode.scrollTop
-        };
-    } else {
-        nodeRect = {
-            left: node.offsetLeft,
-            top: node.offsetTop,
-            right: node.offsetLeft + node.offsetWidth,
-            bottom: node.offsetTop + node.offsetHeight
-        };
-    }
+    var rect = node.getBoundingClientRect();
+    // do not substract the bounding-rect of the scrollParent if it is the documentElement (e.g. the iframe),
+    // otherwise scroll-position is added twice - set to 0:
+    var parentRect = scrollParentNode.parentElement ? scrollParentNode.getBoundingClientRect() : {left: 0, top: 0};
+    var nodeRect = {
+        left: rect.left - parentRect.left + scrollParentNode.scrollLeft,
+        top: rect.top - parentRect.top + scrollParentNode.scrollTop,
+        right: rect.right - parentRect.left + scrollParentNode.scrollLeft,
+        bottom: rect.bottom - parentRect.top + scrollParentNode.scrollTop
+    };
 
     if (nodeRect.bottom > scrollParentNode.scrollTop + scrollParentNode.clientHeight) {
         node.scrollIntoView({behavior: 'smooth', block: 'end'});
