@@ -86,6 +86,7 @@ function HocrProofreader(config) {
     });
     this.layoutSvg.addEventListener('mouseleave', function (event) {
         self.mousePosition = null;
+        self.onHover(null);
     });
     this.layoutContainer.addEventListener('scroll', function (event) {
         if (!self.mousePosition || self.mousePosition.container !== 'layout') return;
@@ -109,12 +110,14 @@ HocrProofreader.prototype.setHocr = function (hocr, baseUrl) {
     hocrDoc.close();
 
     var self = this;
-    hocrDoc.addEventListener('mousemove', function (event) {
+    var hocrRoot = hocrDoc.documentElement;
+    hocrRoot.addEventListener('mousemove', function (event) {
         self.mousePosition = {container: 'editor', x: event.clientX, y: event.clientY};
         self.onHover(event.target, true);
     });
-    hocrDoc.addEventListener('mouseleave', function (event) {
+    hocrRoot.addEventListener('mouseleave', function (event) {
         self.mousePosition = null;
+        self.onHover(null, true);
     });
     hocrDoc.addEventListener('scroll', function (event) {
         if (!self.mousePosition || self.mousePosition.container !== 'editor') return;
