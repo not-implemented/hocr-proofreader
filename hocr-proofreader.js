@@ -209,18 +209,37 @@ HocrProofreader.prototype.setPage = function (page) {
         skipCurrent = false;
     }
 
-    this.currentPage = pageNode || null;
-    this.renderCurrentPage();
+    this.renderPage(pageNode || null);
 };
 
-HocrProofreader.prototype.renderCurrentPage = function (scrollBottom) {
+HocrProofreader.prototype.renderPage = function (pageNode) {
     this.layoutContainer.scrollTop = 0;
     this.layoutContainer.scrollLeft = 0;
 
-    // TODO: remove linkedNode attributes to avoid memleaks
+    var scrollToBottom = false, tmpNode = this.currentPage;
+    while (tmpNode) {
+        tmpNode = tmpNode.previousElementSibling;
+        if (tmpNode === pageNode) {
+            scrollToBottom = true;
+            break;
+        }
+    }
+
+    function removeLinkedNodes(node) {
+        if (node.linkedNode) node.linkedNode = null;
+
+        var childNode = node.firstElementChild;
+        while (childNode) {
+            removeLinkedNodes(childNode);
+            childNode = childNode.nextElementSibling;
+        }
+    }
+    if (this.currentPage) removeLinkedNodes(this.currentPage);
 
     Util.removeChildren(this.layoutWords);
     Util.removeChildren(this.layoutRects);
+
+    this.currentPage = pageNode;
 
     this.setZoom();
 
@@ -240,7 +259,7 @@ HocrProofreader.prototype.renderCurrentPage = function (scrollBottom) {
 
     this.renderNodesRecursive(this.currentPage);
 
-    if (scrollBottom) {
+    if (scrollToBottom) {
         this.layoutContainer.scrollTop = this.layoutContainer.scrollHeight - this.layoutContainer.clientHeight;
     }
 };
@@ -361,17 +380,7 @@ HocrProofreader.prototype.onHover = function (target, isEditorContainer) {
             pageNode = pageNode.parentElement;
         }
         if (pageNode && pageNode !== this.currentPage) {
-            var backwards = false, tmpNode = this.currentPage;
-            while (tmpNode) {
-                tmpNode = tmpNode.previousElementSibling;
-                if (tmpNode === pageNode) {
-                    backwards = true;
-                    break;
-                }
-            }
-
-            this.currentPage = pageNode;
-            this.renderCurrentPage(backwards);
+            this.renderPage(pageNode);
         }
     }
 
