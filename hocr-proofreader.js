@@ -78,56 +78,19 @@ function HocrProofreader(config) {
 
     var self = this;
     self.hoveredNode = null;
+    self.mousePosition = null;
 
     this.layoutSvg.addEventListener('mousemove', function (event) {
-        var node = event.target.linkedNode;
-        if (node !== self.hoveredNode) {
-            if (self.hoveredNode) {
-                self.hoveredNode.classList.remove('hover');
-                self.hoveredNode = null;
-            }
-            if (node) {
-                node.classList.add('hover');
-                self.hoveredNode = node;
-
-                self.scrollIntoViewIfNeeded(node, self.editorIframe.contentDocument.documentElement);
-            }
-        }
+        self.mousePosition = {container: 'layout', x: event.clientX, y: event.clientY};
+        self.onHover(event.target);
     });
-
-    this.editorMoveListener = function (event) {
-        var pageNode = event.target;
-        while (pageNode && (!pageNode.classList || !pageNode.classList.contains('ocr_page'))) {
-            pageNode = pageNode.parentNode;
-        }
-        if (pageNode && pageNode !== self.currentPage) {
-            var backwards = false, tmpNode = self.currentPage;
-            while (tmpNode) {
-                tmpNode = tmpNode.previousSibling;
-                if (tmpNode === pageNode) {
-                    backwards = true;
-                    break;
-                }
-            }
-
-            self.currentPage = pageNode;
-            self.renderCurrentPage(backwards);
-        }
-
-        var node = event.target.linkedNode;
-        if (node !== self.hoveredNode) {
-            if (self.hoveredNode) {
-                self.hoveredNode.classList.remove('hover');
-                self.hoveredNode = null;
-            }
-            if (node) {
-                node.classList.add('hover');
-                self.hoveredNode = node;
-
-                self.scrollIntoViewIfNeeded(node, self.layoutContainer);
-            }
-        }
-    };
+    this.layoutSvg.addEventListener('mouseleave', function (event) {
+        self.mousePosition = null;
+    });
+    this.layoutContainer.addEventListener('scroll', function (event) {
+        if (!self.mousePosition || self.mousePosition.container !== 'layout') return;
+        self.onHover(document.elementFromPoint(self.mousePosition.x, self.mousePosition.y));
+    });
 
     // init some defaults:
     this.currentPage = null;
@@ -145,7 +108,18 @@ HocrProofreader.prototype.setHocr = function (hocr, baseUrl) {
     hocrDoc.write(hocr);
     hocrDoc.close();
 
-    hocrDoc.addEventListener('mousemove', this.editorMoveListener);
+    var self = this;
+    hocrDoc.addEventListener('mousemove', function (event) {
+        self.mousePosition = {container: 'editor', x: event.clientX, y: event.clientY};
+        self.onHover(event.target, true);
+    });
+    hocrDoc.addEventListener('mouseleave', function (event) {
+        self.mousePosition = null;
+    });
+    hocrDoc.addEventListener('scroll', function (event) {
+        if (!self.mousePosition || self.mousePosition.container !== 'editor') return;
+        self.onHover(hocrDoc.elementFromPoint(self.mousePosition.x, self.mousePosition.y), true);
+    });
 
     this.editorStylesheet = Util.createElem('link', {'type': 'text/css', 'rel': 'stylesheet', 'href': 'editor.css'});
     hocrDoc.head.appendChild(this.editorStylesheet);
@@ -305,6 +279,43 @@ HocrProofreader.prototype.getNodeOptions = function (node) {
     }
 
     return options;
+};
+
+HocrProofreader.prototype.onHover = function (target, isEditorContainer) {
+    if (isEditorContainer) {
+        var pageNode = target;
+        while (pageNode && (!pageNode.classList || !pageNode.classList.contains('ocr_page'))) {
+            pageNode = pageNode.parentNode;
+        }
+        if (pageNode && pageNode !== this.currentPage) {
+            var backwards = false, tmpNode = this.currentPage;
+            while (tmpNode) {
+                tmpNode = tmpNode.previousSibling;
+                if (tmpNode === pageNode) {
+                    backwards = true;
+                    break;
+                }
+            }
+
+            this.currentPage = pageNode;
+            this.renderCurrentPage(backwards);
+        }
+    }
+
+    var linkedContainer = isEditorContainer ? this.layoutContainer : this.editorIframe.contentDocument.documentElement;
+    var linkedNode = target.linkedNode;
+    if (linkedNode !== this.hoveredNode) {
+        if (this.hoveredNode) {
+            this.hoveredNode.classList.remove('hover');
+            this.hoveredNode = null;
+        }
+        if (linkedNode) {
+            linkedNode.classList.add('hover');
+            this.hoveredNode = linkedNode;
+
+            this.scrollIntoViewIfNeeded(linkedNode, linkedContainer);
+        }
+    }
 };
 
 HocrProofreader.prototype.scrollIntoViewIfNeeded = function (node, scrollParentNode) {
