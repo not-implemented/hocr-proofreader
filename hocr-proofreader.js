@@ -149,19 +149,28 @@ HocrProofreader.prototype.getHocr = function () {
 };
 
 HocrProofreader.prototype.setZoom = function (zoom) {
-    if (zoom === 'page-full') {
+    if (zoom) this.currentZoom = zoom;
+
+    if (this.currentZoom === 'page-full') {
         this.layoutSvg.style.width = null;
         this.layoutSvg.style.height = null;
         this.layoutSvg.style.maxWidth = '100%';
         this.layoutSvg.style.maxHeight = '100%';
-    } else if (zoom === 'page-width') {
+    } else if (this.currentZoom === 'page-width') {
         this.layoutSvg.style.width = null;
         this.layoutSvg.style.height = null;
         this.layoutSvg.style.maxWidth = '100%';
         this.layoutSvg.style.maxHeight = null;
-    } else if (zoom === 'original') {
-        this.layoutSvg.style.width = '2480px'; // TODO: use bounding box of ocr_page here
-        this.layoutSvg.style.height = '3508px'; // TODO: use bounding box of ocr_page here
+    } else if (this.currentZoom === 'original') {
+        if (this.currentPage) {
+            var options = this.getNodeOptions(this.currentPage);
+            this.layoutSvg.style.width = '' + (options.bbox[2] - options.bbox[0]) + 'px';
+            this.layoutSvg.style.height = '' + (options.bbox[3] - options.bbox[1]) + 'px';
+        } else {
+            this.layoutSvg.style.width = null;
+            this.layoutSvg.style.height = null;
+        }
+
         this.layoutSvg.style.maxWidth = null;
         this.layoutSvg.style.maxHeight = null;
     }
@@ -213,6 +222,8 @@ HocrProofreader.prototype.renderCurrentPage = function (scrollBottom) {
     Util.removeChildren(this.layoutWords);
     Util.removeChildren(this.layoutRects);
 
+    this.setZoom();
+
     if (!this.currentPage) {
         // TODO: hide completely? reset image/font/viewBox/...?
         return;
@@ -220,7 +231,7 @@ HocrProofreader.prototype.renderCurrentPage = function (scrollBottom) {
 
     var pageOptions = this.getNodeOptions(this.currentPage);
 
-    this.layoutSvg.setAttribute('viewBox', pageOptions.bbox.join(' ')); // TODO: handle missing bbox (use image dimensions then)
+    this.layoutSvg.setAttribute('viewBox', pageOptions.bbox.join(' '));
     this.layoutWords.style.fontFamily = 'Liberation Serif, serif'; // TODO: use font from hOCR (per page)
 
     this.layoutImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', this.hocrBaseUrl + pageOptions.image);
