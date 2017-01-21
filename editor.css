@@ -7,18 +7,18 @@ div.ocr_carea {
     padding-left: 10px;
     border-left: 3px solid transparent;
 }
-div.ocr_carea:hover {
+div.ocr_carea:hover, div.ocr_carea.hover {
     border-left: 3px solid #3399ff;
 }
 
 p.ocr_par {
     border: 1px solid transparent;
 }
-p.ocr_par:hover {
+p.ocr_par:hover, p.ocr_par.hover {
     border: 1px dashed #3399ff;
 }
 
-span.ocr_line:hover {
+span.ocr_line:hover, span.ocr_line.hover {
     background: #cce5ff;
 }
 

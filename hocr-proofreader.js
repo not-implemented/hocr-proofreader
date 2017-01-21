@@ -224,40 +224,71 @@ HocrProofreader.prototype.renderCurrentPage = function (scrollBottom) {
     // TODO: handle skew:
     //this.layoutImage.setAttribute('transform', 'rotate(' + degree + ' ' + (pageOptions.bbox[2] / 2) + ' ' + (pageOptions.bbox[3] / 2) + ')');
 
-    var wordNodes = this.currentPage.getElementsByClassName('ocrx_word');
-    // TODO: handle tree hierarchically and render all rects, not only for words
-
-    for (var i = 0; i < wordNodes.length; i++) {
-        var wordNode = wordNodes[i];
-        var options = this.getNodeOptions(wordNode);
-
-        // TODO: do real inheritance for options:
-        var lineOptions = this.getNodeOptions(wordNode.parentNode);
-        if (!lineOptions.baseline) {
-            lineOptions = this.getNodeOptions(wordNode.parentNode.parentNode);
-        }
-
-        if (options.bbox) {
-            var word = wordNode.textContent;
-
-            // TODO: calculate font-size correctly and calculate y based on bbox, not baseline (font-metrics needed):
-            var textNode = Util.createSvgElem('text', {'x': options.bbox[0], 'y': parseFloat(lineOptions.bbox[3]) + parseFloat(lineOptions.baseline[1]),
-                'font-size': 42, 'textLength': options.bbox[2] - options.bbox[0], 'lengthAdjust': 'spacingAndGlyphs'});
-            textNode.textContent = word;
-            this.layoutWords.appendChild(textNode);
-
-            var rectNode = Util.createSvgElem('rect', {'x': options.bbox[0], 'y': options.bbox[1],
-                'width': options.bbox[2] - options.bbox[0], 'height': options.bbox[3] - options.bbox[1]});
-            this.layoutRects.appendChild(rectNode);
-
-            // cross-link:
-            rectNode.linkedNode = wordNode;
-            wordNode.linkedNode = rectNode;
-        }
-    }
+    this.renderNodesRecursive(this.currentPage);
 
     if (scrollBottom) {
         this.layoutContainer.scrollTop = this.layoutContainer.scrollHeight - this.layoutContainer.clientHeight;
+    }
+};
+
+HocrProofreader.prototype.renderNodesRecursive = function (node, options, parentRectsNode) {
+    if (!parentRectsNode) parentRectsNode = this.layoutRects;
+
+    var className = null;
+    if (node.classList.contains('ocr_carea')) {
+        className = 'ocr_carea';
+    } else if (node.classList.contains('ocr_par')) {
+        className = 'ocr_par';
+    } else if (node.classList.contains('ocr_line')) {
+        className = 'ocr_line';
+    } else if (node.classList.contains('ocrx_word')) {
+        className = 'ocrx_word';
+    }
+
+    if (className) {
+        if (className !== 'ocrx_word') {
+            var groupNode = Util.createSvgElem('g', {'class': className});
+            parentRectsNode.appendChild(groupNode);
+            parentRectsNode = groupNode;
+        }
+
+        options = this.inheritOptions(this.getNodeOptions(node), options);
+
+        if (options.bbox) {
+            if (className === 'ocrx_word' && options.baselineBbox) {
+                var word = node.textContent;
+
+                // TODO: calculate font-size correctly and calculate y based on bbox, not baseline (font-metrics needed):
+                var textNode = Util.createSvgElem('text', {
+                    'x': options.bbox[0],
+                    'y': parseFloat(options.baselineBbox[3]) + parseFloat(options.baseline[1]),
+                    'font-size': 42,
+                    'textLength': options.bbox[2] - options.bbox[0],
+                    'lengthAdjust': 'spacingAndGlyphs'
+                });
+                textNode.textContent = word;
+                this.layoutWords.appendChild(textNode);
+            }
+
+            var rectNode = Util.createSvgElem('rect', {
+                'x': options.bbox[0],
+                'y': options.bbox[1],
+                'width': options.bbox[2] - options.bbox[0],
+                'height': options.bbox[3] - options.bbox[1],
+                'class': className
+            });
+            parentRectsNode.appendChild(rectNode);
+
+            // cross-link both nodes:
+            rectNode.linkedNode = node;
+            node.linkedNode = rectNode;
+        }
+    }
+
+    var childNode = node.firstElementChild;
+    while (childNode) {
+        this.renderNodesRecursive(childNode, options, parentRectsNode);
+        childNode = childNode.nextElementSibling;
     }
 };
 
@@ -276,6 +307,25 @@ HocrProofreader.prototype.getNodeOptions = function (node) {
         }
 
         options[name] = value;
+    }
+
+    return options;
+};
+
+HocrProofreader.prototype.inheritOptions = function (options, parentOptions) {
+    var inheritableOptions = ['baseline', 'baselineBbox'];
+
+    // baseline is relative to the bbox of the node where the baseline is defined, so we have to remember this bbox:
+    if ('baseline' in options && 'bbox' in options) {
+        options.baselineBbox = options.bbox;
+    }
+
+    if (parentOptions) {
+        for (var name in parentOptions) {
+            if (inheritableOptions.indexOf(name) === -1) continue;
+            if (name in options) continue;
+            options[name] = parentOptions[name];
+        }
     }
 
     return options;
