@@ -419,13 +419,18 @@ HocrProofreader.prototype.scrollIntoViewIfNeeded = function (node, scrollParentN
         bottom: rect.bottom - parentRect.top + scrollParentNode.scrollTop
     };
 
-    if (nodeRect.bottom > scrollParentNode.scrollTop + scrollParentNode.clientHeight) {
-        node.scrollIntoView({behavior: 'smooth', block: 'end'});
-    } else if (nodeRect.right > scrollParentNode.scrollLeft + scrollParentNode.clientWidth) {
-        node.scrollIntoView({behavior: 'smooth', block: 'end'});
-    } else if (nodeRect.top < scrollParentNode.scrollTop) {
-        node.scrollIntoView({behavior: 'smooth', block: 'start'});
-    } else if (nodeRect.left < scrollParentNode.scrollLeft) {
-        node.scrollIntoView({behavior: 'smooth', block: 'start'});
+    if (nodeRect.bottom - nodeRect.top <= scrollParentNode.clientHeight) { // ignore nodes higher than scroll area
+        if (nodeRect.bottom > scrollParentNode.scrollTop + scrollParentNode.clientHeight) {
+            node.scrollIntoView({behavior: 'smooth', block: 'end'});
+        } else if (nodeRect.top < scrollParentNode.scrollTop) {
+            node.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+    }
+    if (nodeRect.right - nodeRect.left <= scrollParentNode.clientWidth) { // ignore nodes wider than scroll area
+        if (nodeRect.right > scrollParentNode.scrollLeft + scrollParentNode.clientWidth) {
+            node.scrollIntoView({behavior: 'smooth', block: 'end'});
+        } else if (nodeRect.left < scrollParentNode.scrollLeft) {
+            node.scrollIntoView({behavior: 'smooth', block: 'end'});
+        }
     }
 };
