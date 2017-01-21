@@ -11,7 +11,28 @@
     fill: none;
     pointer-events: fill;
 }
-.layout .rects rect:hover, .layout .rects rect.hover {
+
+.layout .rects rect.ocr_carea:hover, .layout .rects .ocr_carea.hover rect.ocr_carea {
+    /* TODO: show ocr_carea just with a line on the left (with some padding?) */
+    stroke: #007eff;
+    stroke-width: 3;
+    stroke-dasharray: 50,50;
+}
+
+.layout .rects rect.ocr_par:hover, .layout .rects .ocr_par.hover rect.ocr_par {
+    stroke: #007eff;
+    stroke-width: 1;
+    stroke-dasharray: 10,10;
+}
+
+.layout .rects rect.ocr_line:hover, .layout .rects .ocr_line.hover rect.ocr_line {
+    fill: #cce5ff;
+    opacity: 0.5;
+    stroke: #007eff;
+    stroke-width: 3;
+}
+
+.layout .rects rect.ocrx_word:hover, .layout .rects rect.ocrx_word.hover {
     fill: #99cfff;
     opacity: 0.5;
     stroke: #007eff;

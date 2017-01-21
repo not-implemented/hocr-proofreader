@@ -353,18 +353,26 @@ HocrProofreader.prototype.onHover = function (target, isEditorContainer) {
     }
 
     var linkedContainer = isEditorContainer ? this.layoutContainer : this.editorIframe.contentDocument.documentElement;
-    var linkedNode = target.linkedNode;
+    var linkedNode = target && target.linkedNode;
     if (linkedNode !== this.hoveredNode) {
-        if (this.hoveredNode) {
-            this.hoveredNode.classList.remove('hover');
-            this.hoveredNode = null;
-        }
+        this.hoverTreeNodes(this.hoveredNode, false);
+        this.hoveredNode = linkedNode || null;
         if (linkedNode) {
-            linkedNode.classList.add('hover');
-            this.hoveredNode = linkedNode;
-
+            this.hoverTreeNodes(linkedNode, true);
             this.scrollIntoViewIfNeeded(linkedNode, linkedContainer);
         }
+    }
+};
+
+HocrProofreader.prototype.hoverTreeNodes = function (node, isActive) {
+    while (node) {
+        if (node.classList.contains('ocr_page') || node.classList.contains('rects')) break;
+        if (isActive) {
+            node.classList.add('hover');
+        } else {
+            node.classList.remove('hover');
+        }
+        node = node.parentElement;
     }
 };
 
