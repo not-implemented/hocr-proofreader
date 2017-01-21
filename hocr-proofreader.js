@@ -182,21 +182,21 @@ HocrProofreader.prototype.setPage = function (page) {
     var hocrDoc = this.editorIframe.contentDocument;
 
     if (page === 'first') {
-        pageNode = hocrDoc.body.firstChild;
+        pageNode = hocrDoc.body.firstElementChild;
     } else if (page === 'last') {
-        pageNode = hocrDoc.body.lastChild;
+        pageNode = hocrDoc.body.lastElementChild;
         backwards = true;
     } else if (page === 'next') {
-        pageNode = this.currentPage || hocrDoc.body.firstChild;
+        pageNode = this.currentPage || hocrDoc.body.firstElementChild;
         skipCurrent = true;
     } else if (page === 'previous') {
-        pageNode = this.currentPage || hocrDoc.body.lastChild;
+        pageNode = this.currentPage || hocrDoc.body.lastElementChild;
         backwards = true;
         skipCurrent = true;
     }
 
-    while (pageNode && (skipCurrent || !pageNode.classList || !pageNode.classList.contains('ocr_page'))) {
-        pageNode = backwards ? pageNode.previousSibling : pageNode.nextSibling;
+    while (pageNode && (skipCurrent || !pageNode.classList.contains('ocr_page'))) {
+        pageNode = backwards ? pageNode.previousElementSibling : pageNode.nextElementSibling;
         skipCurrent = false;
     }
 
@@ -337,13 +337,13 @@ HocrProofreader.prototype.inheritOptions = function (options, parentOptions) {
 HocrProofreader.prototype.onHover = function (target, isEditorContainer) {
     if (isEditorContainer) {
         var pageNode = target;
-        while (pageNode && (!pageNode.classList || !pageNode.classList.contains('ocr_page'))) {
-            pageNode = pageNode.parentNode;
+        while (pageNode && (!pageNode.classList.contains('ocr_page'))) {
+            pageNode = pageNode.parentElement;
         }
         if (pageNode && pageNode !== this.currentPage) {
             var backwards = false, tmpNode = this.currentPage;
             while (tmpNode) {
-                tmpNode = tmpNode.previousSibling;
+                tmpNode = tmpNode.previousElementSibling;
                 if (tmpNode === pageNode) {
                     backwards = true;
                     break;
