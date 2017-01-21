@@ -137,7 +137,7 @@ HocrProofreader.prototype.getHocr = function () {
 
     hocrDoc.head.removeChild(this.editorStylesheet);
     hocrDoc.body.contentEditable = 'inherit'; // this removes the attribute from DOM
-    // TODO: remove all hover classes
+    this.onHover(null); // ensure there are no "hover" classes left
 
     var serializer = new XMLSerializer();
     var hocr = serializer.serializeToString(hocrDoc);
@@ -335,7 +335,16 @@ HocrProofreader.prototype.inheritOptions = function (options, parentOptions) {
 };
 
 HocrProofreader.prototype.onHover = function (target, isEditorContainer) {
+    if (target === this.hoveredNode) return;
+
+    if (this.hoveredNode) {
+        this.hoverTreeNodes(this.hoveredNode, false);
+        this.hoverTreeNodes(this.hoveredNode.linkedNode, false);
+        this.hoveredNode = null;
+    }
+
     if (isEditorContainer) {
+        // check for page change:
         var pageNode = target;
         while (pageNode && (!pageNode.classList.contains('ocr_page'))) {
             pageNode = pageNode.parentElement;
@@ -355,15 +364,14 @@ HocrProofreader.prototype.onHover = function (target, isEditorContainer) {
         }
     }
 
-    var linkedContainer = isEditorContainer ? this.layoutContainer : this.editorIframe.contentDocument.documentElement;
     var linkedNode = target && target.linkedNode;
-    if (linkedNode !== this.hoveredNode) {
-        this.hoverTreeNodes(this.hoveredNode, false);
-        this.hoveredNode = linkedNode || null;
-        if (linkedNode) {
-            this.hoverTreeNodes(linkedNode, true);
-            this.scrollIntoViewIfNeeded(linkedNode, linkedContainer);
-        }
+    if (linkedNode) {
+        this.hoverTreeNodes(target, true);
+        this.hoverTreeNodes(linkedNode, true);
+        this.hoveredNode = target;
+
+        var linkedContainer = isEditorContainer ? this.layoutContainer : this.editorIframe.contentDocument.documentElement;
+        this.scrollIntoViewIfNeeded(linkedNode, linkedContainer);
     }
 };
 
