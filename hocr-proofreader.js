@@ -242,6 +242,7 @@ HocrProofreader.prototype.renderPage = function (pageNode) {
     this.currentPage = pageNode;
 
     this.setZoom();
+    this.layoutImage.removeAttribute('transform');
 
     if (!this.currentPage) {
         // TODO: hide completely? reset image/font/viewBox/...?
@@ -254,8 +255,13 @@ HocrProofreader.prototype.renderPage = function (pageNode) {
     this.layoutWords.style.fontFamily = 'Liberation Serif, serif'; // TODO: use font from hOCR (per page)
 
     this.layoutImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', this.hocrBaseUrl + pageOptions.image);
-    // TODO: handle skew:
-    //this.layoutImage.setAttribute('transform', 'rotate(' + degree + ' ' + (pageOptions.bbox[2] / 2) + ' ' + (pageOptions.bbox[3] / 2) + ')');
+
+    if (pageOptions.textangle) {
+        // textangle is counter-clockwise, so we have to rotate the image clockwise - and transform-rotate() is clockwise:
+        this.layoutImage.setAttribute('transform', 'rotate(' + pageOptions.textangle + ' ' +
+            ((pageOptions.bbox[2] - pageOptions.bbox[0]) / 2) + ' ' +
+            ((pageOptions.bbox[3] - pageOptions.bbox[1]) / 2) + ')');
+    }
 
     this.renderNodesRecursive(this.currentPage);
 
