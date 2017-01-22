@@ -263,7 +263,7 @@ HocrProofreader.prototype.renderPage = function (pageNode) {
             ((pageOptions.bbox[3] - pageOptions.bbox[1]) / 2) + ')');
     }
 
-    this.renderNodesRecursive(this.currentPage);
+    this.renderNodesRecursive(this.currentPage, pageOptions);
 
     if (scrollToBottom) {
         this.layoutContainer.scrollTop = this.layoutContainer.scrollHeight - this.layoutContainer.clientHeight;
@@ -301,7 +301,7 @@ HocrProofreader.prototype.renderNodesRecursive = function (node, options, parent
                 var textNode = Util.createSvgElem('text', {
                     'x': options.bbox[0],
                     'y': parseFloat(options.baselineBbox[3]) + parseFloat(options.baseline[1]),
-                    'font-size': options.x_fsize * /* TODO: options.scan_res[1] */ 300 / 72, // 1 pt = 1/72 inch
+                    'font-size': options.x_fsize * options.scan_res[1] / 72, // 1 pt = 1/72 inch
                     'textLength': options.bbox[2] - options.bbox[0],
                     'lengthAdjust': 'spacingAndGlyphs'
                 });
@@ -332,7 +332,7 @@ HocrProofreader.prototype.renderNodesRecursive = function (node, options, parent
 };
 
 HocrProofreader.prototype.getNodeOptions = function (node) {
-    var asArray = ['bbox', 'baseline'];
+    var asArray = ['bbox', 'baseline', 'scan_res'];
     var optionsStr = node.title ? node.title : '';
     var match, regex = /(?:^|;)\s*(\w+)\s+(?:([^;"']+?)|"((?:\\"|[^"])+?)"|'((?:\\'|[^'])+?)')\s*(?=;|$)/g;
 
@@ -352,7 +352,7 @@ HocrProofreader.prototype.getNodeOptions = function (node) {
 };
 
 HocrProofreader.prototype.inheritOptions = function (options, parentOptions) {
-    var inheritableOptions = ['baseline', 'baselineBbox', 'x_fsize'];
+    var inheritableOptions = ['baseline', 'baselineBbox', 'x_fsize', 'scan_res'];
 
     // baseline is relative to the bbox of the node where the baseline is defined, so we have to remember this bbox:
     if ('baseline' in options && 'bbox' in options) {
