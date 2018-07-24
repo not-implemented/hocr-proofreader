@@ -30,3 +30,7 @@ span.ocr_line.hover {
 span.ocrx_word.hover {
     background: #99cfff;
 }
+
+span.ocr_line {
+  display:block;
+}
