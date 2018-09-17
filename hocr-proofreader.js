@@ -296,12 +296,13 @@ HocrProofreader.prototype.renderNodesRecursive = function (node, options, parent
         if (options.bbox) {
             if (className === 'ocrx_word' && options.baselineBbox) {
                 var word = node.textContent;
-
-                // TODO: calculate font-size and y based on bbox, not baseline (font-metrics needed):
+                var fontsize = options.x_fsize  
+                    ? options.x_fsize * (options.scan_res?options.scan_res[1]:250) / 72 + 'pt'
+                    : (options.bbox[3] - options.bbox[1]) + "px";//x_fsize and scan_res is not a must param in hocr, using bbox width/length as font size
                 var textNode = Util.createSvgElem('text', {
                     'x': options.bbox[0],
                     'y': parseFloat(options.baselineBbox[3]) + parseFloat(options.baseline[1]),
-                    'font-size': options.x_fsize * options.scan_res[1] / 72, // 1 pt = 1/72 inch
+                    'font-size': fontsize, // 1 pt = 1/72 inch
                     'textLength': options.bbox[2] - options.bbox[0],
                     'lengthAdjust': 'spacingAndGlyphs'
                 });
